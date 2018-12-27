@@ -1,5 +1,5 @@
 # kapre2keras
-Converts Kapre Melspectrogram layer to Keras representation.
+Represent Kapre Melspectrogram layer as conventional Keras layers.
 
 # why?
 

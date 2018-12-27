@@ -3,7 +3,7 @@ Represent Kapre Melspectrogram layer as conventional Keras layers.
 
 # why?
 
-Although Kapre (https://github.com/keunwoochoi/kapre) is awesome, it is a bit cumbersome for Android, Raspberry pi because it uses custom layer. kapre2keras simply converts this custom layer to the conventional keras layers.
+Although Kapre (https://github.com/keunwoochoi/kapre) is awesome, it is a bit cumbersome for Android or Raspberry pi because it uses custom layer. kapre2keras simply represents this custom layer by using conventional Keras layers.
 
 # Usage
 

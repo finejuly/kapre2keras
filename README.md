@@ -7,7 +7,7 @@ Although Kapre (https://github.com/keunwoochoi/kapre) is awesome, it is a bit cu
 
 # Usage
 
-- For the details about parameters, please refer Kapre.
+- For the details about the parameters, please refer Kapre.
 
 ```
 from kapre2keras.melspectrogram import Melspectrogram

@@ -6,6 +6,7 @@ import keras
 import keras.backend as K
 
 from kapre.time_frequency import Melspectrogram as kapre_Melspectrogram
+import numpy as np
 
 class Melspectrogram():
     def __init__(self, 
@@ -39,13 +40,20 @@ class Melspectrogram():
         self.trainable_fb=trainable_fb
         self.trainable_kernel=trainable_kernel
 
-    def __call__(self, inputs):
+    def __call__(self, inputs, mode='keras'):
+
+        assert mode in ['keras', 'kapre'], "mode must be 'keras' (default) or 'kapre'"        
+        
         layer_shape = Model(inputs=inputs, outputs=inputs).output_shape
         self.n_ch = layer_shape[1]
         self.n_sample = layer_shape[2]
+
+        outputs = kapre_Melspectrogram(n_dft=self.n_dft, n_hop=self.n_hop, input_shape=self.input_shape, padding=self.padding, sr=self.sr, n_mels=self.n_mels, fmin=self.fmin, fmax=self.fmax, power_melgram=self.power_melgram, return_decibel_melgram=self.return_decibel_melgram, trainable_fb=self.trainable_fb, trainable_kernel=self.trainable_kernel)(inputs)
         
-        kapre_model = Sequential()
-        kapre_model.add(kapre_Melspectrogram(n_dft=self.n_dft, n_hop=self.n_hop, input_shape=self.input_shape, padding=self.padding, sr=self.sr, n_mels=self.n_mels, fmin=self.fmin, fmax=self.fmax, power_melgram=self.power_melgram, return_decibel_melgram=False, trainable_fb=False, trainable_kernel=False))
+        if mode=='kapre':
+            return outputs
+        
+        kapre_model = Model(inputs=inputs, outputs=outputs)
         self.w = kapre_model.get_weights()
         
         m = inputs
@@ -63,6 +71,13 @@ class Melspectrogram():
         m = Dense(self.n_mels, use_bias=False, kernel_initializer=keras.initializers.Constant(value=self.w[2]), trainable=self.trainable_fb, name='freq2mel')(m)
         if self.power_melgram!=2.0:
             m = Lambda(lambda x: K.pow(K.sqrt(x),self.power_melgram))(m)
+        if self.return_decibel_melgram==True:
+            amin=1e-10
+            dynamic_range=80.0
+            m = Lambda(lambda x: 10 * K.log(K.maximum(x, amin)) / np.log(10).astype(K.floatx()))(m)
+            m = Lambda(lambda x: x - K.max(x))(m)
+            m = Lambda(lambda x: K.maximum(x, -1 * dynamic_range) )(m)
+            
         m = Permute((3,1,2))(m)
         outputs = m           
 

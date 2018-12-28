@@ -8,6 +8,29 @@ import keras.backend as K
 from kapre.time_frequency import Melspectrogram as kapre_Melspectrogram
 import numpy as np
 
+'''
+def Melspectrogram(inputs, 
+                 n_dft=512, 
+                 n_hop=256, 
+                 input_shape=(1,44100), 
+                 padding='same', 
+                 sr=16000, 
+                 n_mels=128, 
+                 fmin=0.0, 
+                 fmax=8000, 
+                 power_melgram=1.0, 
+                 return_decibel_melgram=False, 
+                 trainable_fb=False, 
+                 trainable_kernel=False,
+                 mode='keras'):
+    
+    assert mode in ['keras', 'kapre'], "mode must be 'keras' (default) or 'kapre'"        
+    
+    layer_shape = Model(inputs=inputs, outputs=inputs).output_shape
+    self.n_ch = layer_shape[1]
+    self.n_sample = layer_shape[2]
+'''    
+ 
 class Melspectrogram():
     def __init__(self, 
                  n_dft=512, 
@@ -23,6 +46,8 @@ class Melspectrogram():
                  trainable_fb=False, 
                  trainable_kernel=False):
         
+        self.__name__='Melspectrogram'
+        
         self.n_dft=n_dft
         if self.n_dft%2==0:
             self.n_freq = self.n_dft/2+1
@@ -35,10 +60,15 @@ class Melspectrogram():
         self.n_mels=n_mels
         self.fmin=fmin
         self.fmax=fmax
+        
+        assert float(power_melgram) in [1.0, 2.0], "power_melgram must be 1.0 or 2.0" 
+        
         self.power_melgram=float(power_melgram)
         self.return_decibel_melgram=return_decibel_melgram
         self.trainable_fb=trainable_fb
         self.trainable_kernel=trainable_kernel
+        self.amin = 1e-10
+        self.dynamic_range=80.0
 
     def __call__(self, inputs, mode='keras'):
 
@@ -52,6 +82,11 @@ class Melspectrogram():
         
         if mode=='kapre':
             return outputs
+        
+        #params = {'power_melgram':self.power_melgram, 'amin':self.amin, 'dynamic_range':self.dynamic_range}
+        #setattr(K, 'params', params)
+        
+        
         
         kapre_model = Model(inputs=inputs, outputs=outputs)
         self.w = kapre_model.get_weights()
@@ -69,8 +104,8 @@ class Melspectrogram():
         m_im = Lambda(lambda x: K.pow(x,2))(m_im)
         m = Add()([m_re,m_im])
         m = Dense(self.n_mels, use_bias=False, kernel_initializer=keras.initializers.Constant(value=self.w[2]), trainable=self.trainable_fb, name='freq2mel')(m)
-        if self.power_melgram!=2.0:
-            m = Lambda(lambda x: K.pow(K.sqrt(x),self.power_melgram))(m)
+        if self.power_melgram==1.0:
+            m = Lambda(lambda x: K.pow(K.sqrt(x),1))(m)
         if self.return_decibel_melgram==True:
             amin=1e-10
             dynamic_range=80.0

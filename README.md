@@ -3,7 +3,7 @@ Represent Kapre Melspectrogram layer as conventional Keras layers.
 
 # why?
 
-Although Kapre (https://github.com/keunwoochoi/kapre) is awesome, it is a bit cumbersome for Android or Raspberry pi because it uses custom layer. kapre2keras simply represents this custom layer by using conventional Keras layers.
+Although Kapre (https://github.com/keunwoochoi/kapre) is awesome, it is a bit cumbersome for Android or Raspberry pi because it uses custom layer and requires librosa. kapre2keras simply represents this custom layer by using conventional Keras layers.
 
 # Usage
 
@@ -78,6 +78,14 @@ Trainable params: 0
 Non-trainable params: 296,064
 __________________________________________________________________________________________________
 ```
+
+# Requirements
+
+- Model generation phase:
+Kapre (and Librosa and Keras for it)
+
+- Training and inference phase:
+Keras
 
 # Contact
 

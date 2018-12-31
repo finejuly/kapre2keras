@@ -82,10 +82,17 @@ ________________________________________________________________________________
 # Requirements
 
 - Model generation phase:
-Kapre (and Librosa and Keras for it)
+Kapre (and Librosa and Keras 2.2.4 for it)
 
 - Training and inference phase:
 Keras
+
+
+# Troubleshooting
+
+ - TypeError: Expected float32, got {'type': 'ndarray', 'value': ...} of type 'dict' instead.
+ Check https://github.com/keras-team/keras/issues/11281 and update Keras to 2.2.4.
+
 
 # Contact
 

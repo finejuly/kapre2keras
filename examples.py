@@ -3,7 +3,7 @@ import numpy as np
 from keras.layers import Input
 from keras.models import Model
 
-from kapre2keras.melspectrogram import Melspectrogram
+from .kapre2keras.melspectrogram import Melspectrogram
  
 sr = 44100
 n_ch = 2

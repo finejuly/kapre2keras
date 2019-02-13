@@ -50,9 +50,9 @@ class Melspectrogram():
         
         self.n_dft=n_dft
         if self.n_dft%2==0:
-            self.n_freq = self.n_dft/2+1
+            self.n_freq = self.n_dft//2+1
         else:
-            self.n_freq = (self.n_dft+1)/2
+            self.n_freq = (self.n_dft+1)//2
         self.n_hop=n_hop
         self.input_shape=input_shape
         self.padding=padding
@@ -94,11 +94,11 @@ class Melspectrogram():
         m = inputs
         m = Reshape((self.n_ch,-1,1))(m)
         m = Permute((2,1,3))(m)
-        m_re = Conv2D(self.n_dft/2+1, kernel_size=(self.n_dft,1), strides=(self.n_hop, 1), 
+        m_re = Conv2D(self.n_dft//2+1, kernel_size=(self.n_dft,1), strides=(self.n_hop, 1), 
                       padding=self.padding, use_bias=False, kernel_initializer=keras.initializers.Constant(value=self.w[0]), 
                       trainable=self.trainable_kernel, name='stft_real')(m)
         m_re = Lambda(lambda x: K.pow(x,2))(m_re)
-        m_im = Conv2D(self.n_dft/2+1, kernel_size=(self.n_dft,1), strides=(self.n_hop, 1), 
+        m_im = Conv2D(self.n_dft//2+1, kernel_size=(self.n_dft,1), strides=(self.n_hop, 1), 
                       padding=self.padding, use_bias=False, kernel_initializer=keras.initializers.Constant(value=self.w[1]), 
                       trainable=self.trainable_kernel, name='stft_imag')(m)
         m_im = Lambda(lambda x: K.pow(x,2))(m_im)

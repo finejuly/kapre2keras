@@ -1,5 +1,5 @@
 from keras.models import Sequential, Model
-from keras.layers.convolutional import Conv2D
+from keras.layers.convolutional import Conv2D, Conv1D
 from keras.layers.core import Reshape, Dense, Permute, Lambda
 from keras.layers import Add
 import keras
@@ -90,22 +90,33 @@ class Melspectrogram():
         
         kapre_model = Model(inputs=inputs, outputs=outputs)
         self.w = kapre_model.get_weights()
-        print np.shape(self.w[0])
-        print np.shape(self.w[2])
         
-        m = inputs
-        m = Reshape((self.n_ch,-1,1))(m)
-        m = Permute((2,1,3))(m)
-        m_re = Conv2D(self.n_dft//2+1, kernel_size=(self.n_dft,1), strides=(self.n_hop, 1), 
-                      padding=self.padding, use_bias=False, kernel_initializer=keras.initializers.Constant(value=self.w[0]), 
+        m = inputs # None 1 None
+        #m = Reshape((1,-1,1))(m)
+        
+        #m = Permute((2,1,3))(m)
+        m = Permute((2,1))(m) #  None None 1
+        #m_re = Conv2D(self.n_dft//2+1, kernel_size=(self.n_dft,1), strides=(self.n_hop, 1), 
+        #              padding=self.padding, use_bias=False, kernel_initializer=keras.initializers.Constant(value=self.w[0]), 
+        #              trainable=self.trainable_kernel, name='stft_real')(m)
+        m_re = Conv1D(self.n_dft//2+1, kernel_size=self.n_dft, strides=self.n_hop, 
+                      padding=self.padding, use_bias=False, kernel_initializer=keras.initializers.Constant(value=self.w[0][:,0,:,:]), # None None 257
                       trainable=self.trainable_kernel, name='stft_real')(m)
         m_re = Lambda(lambda x: K.pow(x,2))(m_re)
-        m_im = Conv2D(self.n_dft//2+1, kernel_size=(self.n_dft,1), strides=(self.n_hop, 1), 
-                      padding=self.padding, use_bias=False, kernel_initializer=keras.initializers.Constant(value=self.w[1]), 
+        #m_im = Conv2D(self.n_dft//2+1, kernel_size=(self.n_dft,1), strides=(self.n_hop, 1), 
+        #              padding=self.padding, use_bias=False, kernel_initializer=keras.initializers.Constant(value=self.w[1]), 
+        #              trainable=self.trainable_kernel, name='stft_imag')(m)
+        m_im = Conv1D(self.n_dft//2+1, kernel_size=self.n_dft, strides=self.n_hop, 
+                      padding=self.padding, use_bias=False, kernel_initializer=keras.initializers.Constant(value=self.w[1][:,0,:,:]), 
                       trainable=self.trainable_kernel, name='stft_imag')(m)
         m_im = Lambda(lambda x: K.pow(x,2))(m_im)
         m = Add()([m_re,m_im])
         m = Dense(self.n_mels, use_bias=False, kernel_initializer=keras.initializers.Constant(value=self.w[2]), trainable=self.trainable_fb, name='freq2mel')(m)
+        
+        #for 1D
+        m = Reshape((-1, 1, self.n_mels))(m)
+        #
+        
         if self.power_melgram==1.0:
             m = Lambda(lambda x: K.pow(K.sqrt(x),1))(m)
         if self.return_decibel_melgram==True:
